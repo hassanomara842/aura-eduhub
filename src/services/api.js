@@ -1,8 +1,8 @@
 // ── Scholarships (json-server — public data) ──────────────────
-const API_URL      = 'http://localhost:5000/scholarships';
+const API_URL = import.meta.env.VITE_SCHOLARSHIPS_API || 'http://localhost:5000/scholarships';
 
 // ── Contacts (Express auth server — protected) ────────────────
-const AUTH_SERVER  = 'http://localhost:5001';
+const AUTH_SERVER = import.meta.env.VITE_AUTH_API || 'http://localhost:5001';
 
 // Helper: get JWT token from session
 function getAuthHeaders() {

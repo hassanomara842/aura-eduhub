@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 
-const AUTH_SERVER = 'http://localhost:5001';
+const AUTH_SERVER = import.meta.env.VITE_AUTH_API || 'http://localhost:5001';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
