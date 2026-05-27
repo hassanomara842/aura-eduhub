@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "concurrently \"vite\" \"json-server --watch db.json --port 5000\" \"node server/index.js\"",
+    "start": "concurrently \"vite\" \"node server/index.js\"",
+    "dev": "concurrently \"vite\" \"node server/index.js\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

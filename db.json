@@ -200,5 +200,17 @@
         ]
       }
     }
+  ],
+  "admins": [
+    {
+      "username": "admin",
+      "passwordHash": "$2a$10$GaNHiWAUa.q31yrjIIAlyu7u9ZK8On8HOA5..ygLGIYpDBO7Uj3IK",
+      "role": "مدير"
+    },
+    {
+      "username": "manager",
+      "passwordHash": "$2a$10$s7z57r0LTHXIqcMGAtNzueENUgNr3BeM5ppKNi8sA1n9jKWmzpf7W",
+      "role": "مسئول"
+    }
   ]
 }
