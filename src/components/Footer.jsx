@@ -51,6 +51,9 @@ export default function Footer() {
       
       <div style={{ borderTop: '1px solid #334155', paddingTop: '2rem', textAlign: 'center', color: '#94a3b8' }}>
         <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()} - Aura EduHub للمنح الدراسية</p>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+          تم الانشاء بواسطه <a href="http://facebook.com/Hassantech842" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--secondary)', textDecoration: 'none', fontWeight: 'bold' }}>Hassan Tech</a>
+        </p>
       </div>
     </footer>
   );
