@@ -1,8 +1,10 @@
-// ── Scholarships (json-server — public data) ──────────────────
-const API_URL = import.meta.env.VITE_SCHOLARSHIPS_API || 'http://localhost:5000/scholarships';
+const REPLIT_URL = 'https://f8911b95-5232-429b-b0db-0a39fcaae1f0-00-14fevn8p0m8l0.picard.replit.dev';
+
+// ── Scholarships ──────────────────
+const API_URL = import.meta.env.VITE_SCHOLARSHIPS_API || `${REPLIT_URL}/scholarships`;
 
 // ── Contacts (Express auth server — protected) ────────────────
-const AUTH_SERVER = import.meta.env.VITE_AUTH_API || 'http://localhost:5001';
+const AUTH_SERVER = import.meta.env.VITE_AUTH_API || REPLIT_URL;
 
 // Helper: get JWT token from session
 function getAuthHeaders() {
