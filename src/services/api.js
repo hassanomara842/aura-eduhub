@@ -90,3 +90,15 @@ export const deleteContact = async (id) => {
   if (!res.ok) throw new Error('Failed to delete contact');
   return res.json();
 };
+
+// ── Settings API (JWT protected) ─────────────────────────────
+export const updateAdminCredentials = async (data) => {
+  const res = await fetch(`${AUTH_SERVER}/api/admin/credentials`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Failed to update credentials');
+  return json;
+};

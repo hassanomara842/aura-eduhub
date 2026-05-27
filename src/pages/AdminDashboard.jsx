@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useScholarships } from '../context/ScholarshipContext';
 import { useAuth } from '../context/AuthContext';
 import ScholarshipForm from '../components/ScholarshipForm';
-import { Plus, Edit2, Trash2, MapPin, Award, Calendar, Users, Download, PhoneCall, Mail, Clock, CheckCircle2, XCircle, LogOut } from 'lucide-react';
-import { getContacts, deleteContact } from '../services/api';
+import { Plus, Edit2, Trash2, MapPin, Award, Calendar, Users, Download, PhoneCall, Mail, Clock, CheckCircle2, XCircle, LogOut, Settings, Lock, User } from 'lucide-react';
+import { getContacts, deleteContact, updateAdminCredentials } from '../services/api';
 
 // ── Excel export helper (no external lib needed) ──────────
 function exportToExcel(contacts) {
@@ -156,6 +156,7 @@ export default function AdminDashboard() {
         {[
           { key: 'scholarships', label: 'إدارة المنح', icon: <Award size={18} /> },
           { key: 'contacts',     label: 'الطلبات الواردة', icon: <Users size={18} />, badge: contacts.length || null },
+          { key: 'settings',     label: 'الإعدادات', icon: <Settings size={18} /> },
         ].map(tab => (
           <button
             key={tab.key}
@@ -319,6 +320,73 @@ export default function AdminDashboard() {
             </div>
           )}
         </>
+      )}
+
+      {/* ══════════════════════════════════════════
+          TAB: SETTINGS
+      ══════════════════════════════════════════ */}
+      {activeTab === 'settings' && (
+        <div style={{ maxWidth: '500px', margin: '0 auto', backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--primary-dark)', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+            <Settings size={24} />
+            <h2 style={{ margin: 0, fontSize: '1.3rem' }}>تغيير بيانات الدخول</h2>
+          </div>
+          
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const errDiv = document.getElementById('settings-err');
+            errDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = 'جاري التحديث...';
+            
+            try {
+              await updateAdminCredentials({
+                currentPassword: e.target.currentPassword.value,
+                newUsername: e.target.newUsername.value,
+                newPassword: e.target.newPassword.value
+              });
+              alert('✅ تم تحديث البيانات بنجاح! سيتم تسجيل خروجك الآن لتسجيل الدخول بالبيانات الجديدة.');
+              handleLogout();
+            } catch (err) {
+              errDiv.innerText = '❌ ' + err.message;
+              errDiv.style.display = 'block';
+            } finally {
+              btn.disabled = false;
+              btn.innerHTML = 'حفظ التغييرات';
+            }
+          }}>
+            <div id="settings-err" style={{ display: 'none', backgroundColor: '#fef2f2', color: '#dc2626', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontWeight: 'bold', fontSize: '0.9rem', border: '1px solid #fca5a5' }}></div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>كلمة المرور الحالية</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Lock size={16} /></span>
+                <input type="password" name="currentPassword" required style={{ width: '100%', padding: '0.7rem 2.5rem 0.7rem 0.7rem', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }} placeholder="تأكيد هويتك" />
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>اسم المستخدم الجديد</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><User size={16} /></span>
+                <input type="text" name="newUsername" required defaultValue={user?.username} style={{ width: '100%', padding: '0.7rem 2.5rem 0.7rem 0.7rem', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }} />
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>كلمة المرور الجديدة</label>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><Lock size={16} /></span>
+                <input type="password" name="newPassword" required minLength="6" style={{ width: '100%', padding: '0.7rem 2.5rem 0.7rem 0.7rem', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }} />
+              </div>
+            </div>
+            
+            <button type="submit" style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: 'none', backgroundColor: 'var(--primary)', color: 'white', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--primary)'}>
+              حفظ التغييرات
+            </button>
+          </form>
+        </div>
       )}
     </div>
   );

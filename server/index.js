@@ -40,18 +40,6 @@ const DB_PATH    = path.join(__dirname, '..', 'db.json');
 app.use(cors());
 app.use(express.json());
 
-// ── Admin credentials (from .env, hashed at startup) ─────────
-const RAW_ADMINS = [
-  { username: process.env.ADMIN_USER   || 'admin',   password: process.env.ADMIN_PASS   || 'baura@2025', role: 'مدير' },
-  { username: process.env.MANAGER_USER || 'manager', password: process.env.MANAGER_PASS || 'baura@mgr1', role: 'مسئول' },
-];
-
-const ADMINS = RAW_ADMINS.map(({ username, password, role }) => ({
-  username,
-  role,
-  passwordHash: bcrypt.hashSync(password, 10),
-}));
-
 // ── JWT Middleware ─────────────────────────────────────────────
 function verifyToken(req, res, next) {
   const token = (req.headers['authorization'] || '').split(' ')[1];
@@ -67,6 +55,20 @@ function verifyToken(req, res, next) {
 const readDB  = () => JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
 const writeDB = (data) => fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
 
+// ── Initialize Admins in DB ───────────────────────────────────
+function initAdmins() {
+  const db = readDB();
+  if (!db.admins || db.admins.length === 0) {
+    db.admins = [
+      { username: process.env.ADMIN_USER   || 'admin',   passwordHash: bcrypt.hashSync(process.env.ADMIN_PASS   || 'baura@2025', 10), role: 'مدير' },
+      { username: process.env.MANAGER_USER || 'manager', passwordHash: bcrypt.hashSync(process.env.MANAGER_PASS || 'baura@mgr1', 10), role: 'مسئول' },
+    ];
+    writeDB(db);
+    console.log('✅ Admins initialized in database');
+  }
+}
+initAdmins();
+
 // ══════════════════════════════════════════════════════════════
 // ROUTES
 // ══════════════════════════════════════════════════════════════
@@ -76,7 +78,8 @@ app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'بيانات ناقصة' });
 
-  const admin = ADMINS.find(a => a.username === username.trim());
+  const db = readDB();
+  const admin = (db.admins || []).find(a => a.username === username.trim());
   if (!admin || !bcrypt.compareSync(password.trim(), admin.passwordHash)) {
     return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
   }
@@ -84,6 +87,31 @@ app.post('/api/login', (req, res) => {
   const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '8h' });
   console.log(`✅ Login: ${admin.username} (${admin.role})`);
   res.json({ token, username: admin.username, role: admin.role });
+});
+
+// PUT /api/admin/credentials — Change Username & Password
+app.put('/api/admin/credentials', verifyToken, (req, res) => {
+  const { currentPassword, newUsername, newPassword } = req.body;
+  if (!currentPassword || !newUsername || !newPassword) {
+    return res.status(400).json({ error: 'بيانات ناقصة' });
+  }
+
+  const db = readDB();
+  const adminIndex = db.admins.findIndex(a => a.username === req.user.username);
+  if (adminIndex === -1) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+  const admin = db.admins[adminIndex];
+  if (!bcrypt.compareSync(currentPassword, admin.passwordHash)) {
+    return res.status(401).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+  }
+
+  // Update credentials
+  db.admins[adminIndex].username = newUsername.trim();
+  db.admins[adminIndex].passwordHash = bcrypt.hashSync(newPassword.trim(), 10);
+  writeDB(db);
+
+  console.log(`🔒 Credentials updated for: ${newUsername}`);
+  res.json({ success: true, message: 'تم تحديث البيانات بنجاح' });
 });
 
 // ── Contacts API ──────────────────────────────────────────────
