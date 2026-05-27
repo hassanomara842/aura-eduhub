@@ -20,10 +20,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    // Small delay for UX
-    await new Promise(r => setTimeout(r, 600));
-
-    const ok = login(form.username, form.password);
+    const ok = await login(form.username, form.password);
     if (ok) {
       navigate(from, { replace: true });
     } else {
