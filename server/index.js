@@ -31,11 +31,13 @@ function loadEnv(filePath) {
 loadEnv(path.join(__dirname, '.env'));
 
 const app = express();
-const PORT = 5001;
+// Render assigns a port via process.env.PORT
+const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'baura_jwt_super_secret_2025';
 const DB_PATH    = path.join(__dirname, '..', 'db.json');
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'] }));
+// Allow CORS from any origin for production
+app.use(cors());
 app.use(express.json());
 
 // ── Admin credentials (from .env, hashed at startup) ─────────
@@ -84,6 +86,8 @@ app.post('/api/login', (req, res) => {
   res.json({ token, username: admin.username, role: admin.role });
 });
 
+// ── Contacts API ──────────────────────────────────────────────
+
 // GET /api/contacts — JWT required
 app.get('/api/contacts', verifyToken, (req, res) => {
   res.json(readDB().contacts || []);
@@ -113,13 +117,45 @@ app.delete('/api/contacts/:id', verifyToken, (req, res) => {
   res.json({ success: true });
 });
 
+// ── Scholarships API (replaces json-server) ───────────────────
+
+app.get('/scholarships', (req, res) => {
+  res.json(readDB().scholarships || []);
+});
+
+app.get('/scholarships/:id', (req, res) => {
+  const scholarship = (readDB().scholarships || []).find(s => s.id === req.params.id);
+  if (!scholarship) return res.status(404).json({ error: 'Not found' });
+  res.json(scholarship);
+});
+
+app.post('/scholarships', verifyToken, (req, res) => {
+  const db = readDB();
+  const newScholarship = { id: Date.now().toString(), ...req.body };
+  db.scholarships = [...(db.scholarships || []), newScholarship];
+  writeDB(db);
+  res.status(201).json(newScholarship);
+});
+
+app.put('/scholarships/:id', verifyToken, (req, res) => {
+  const db = readDB();
+  const index = (db.scholarships || []).findIndex(s => s.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Not found' });
+  db.scholarships[index] = { ...db.scholarships[index], ...req.body };
+  writeDB(db);
+  res.json(db.scholarships[index]);
+});
+
+app.delete('/scholarships/:id', verifyToken, (req, res) => {
+  const db = readDB();
+  db.scholarships = (db.scholarships || []).filter(s => s.id !== req.params.id);
+  writeDB(db);
+  res.json({ success: true });
+});
+
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, () => {
-  console.log(`\n🔐 Auth server → http://localhost:${PORT}`);
-  console.log(`   POST   /api/login           (public)`);
-  console.log(`   GET    /api/contacts         (JWT required)`);
-  console.log(`   POST   /api/contacts         (public)`);
-  console.log(`   DELETE /api/contacts/:id     (JWT required)\n`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
 });
