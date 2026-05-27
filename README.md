@@ -1,16 +1,90 @@
-# React + Vite
+# 🎓 Aura EduHub | منصة أورا التعليمية
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Aura EduHub Banner](src/assets/hero.png)
 
-Currently, two official plugins are available:
+**Aura EduHub** هي منصة متكاملة لتقديم خدمات المنح الدراسية والدراسة في الخارج. تتيح المنصة للطلاب تصفح المنح المتاحة، معرفة التفاصيل، وتقديم طلبات الالتحاق بسهولة، مع وجود لوحة تحكم إدارية (Admin Dashboard) محمية بالكامل لمتابعة الطلبات وإدارة المنح.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ المميزات (Features)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🧑‍🎓 واجهة المستخدم (Frontend)
+- **تصميم عصري وجذاب**: واجهة مستخدم (UI) احترافية مع انيميشن سلس ودعم كامل للغة العربية (RTL).
+- **عرض المنح**: تصفح المنح المتاحة مع إمكانية الدخول لمعرفة تفاصيل كل منحة.
+- **التواصل السهل**: نموذج تواصل (Contact Form) يتيح للطلاب إرسال استفساراتهم أو طلباتهم مباشرة.
+- **متجاوب بالكامل (Responsive)**: يعمل بشكل مثالي على أجهزة الكمبيوتر، الموبايل، والتابلت.
 
-## Expanding the ESLint configuration
+### 🛡️ لوحة التحكم (Admin Dashboard)
+- **حماية عالية (JWT Auth)**: لوحة تحكم محمية لا يمكن دخولها إلا للمسئولين.
+- **إدارة المنح**: إمكانية إضافة، تعديل، وحذف المنح الدراسية بسهولة.
+- **إدارة الطلبات**: عرض كافة الطلبات والاستفسارات الواردة من الطلاب.
+- **تصدير للإكسيل**: إمكانية تحميل الطلبات في ملف Excel (CSV) بضغطة زر.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ التقنيات المستخدمة (Tech Stack)
+
+- **Frontend**: React.js, Vite, React Router DOM, CSS.
+- **Icons**: Lucide React.
+- **Backend**: Node.js, Express.js.
+- **Database**: JSON Server (db.json) - *لمحاكاة قواعد البيانات*.
+- **Security**: JWT (JSON Web Tokens), bcryptjs (لتشفير كلمات المرور).
+
+---
+
+## 🚀 طريقة التشغيل على جهازك (Local Development)
+
+### 1️⃣ المتطلبات المسبقة (Prerequisites)
+تأكد من وجود [Node.js](https://nodejs.org/) مثبتاً على جهازك.
+
+### 2️⃣ التثبيت (Installation)
+قم باستنساخ المشروع وتثبيت الحزم:
+```bash
+git clone https://github.com/hassanomara842/aura-eduhub.git
+cd aura-eduhub
+npm install
+```
+
+### 3️⃣ إعداد متغيرات البيئة (Environment Variables)
+قم بإنشاء ملف `.env` داخل مجلد `server/` وأضف فيه بيانات الدخول السرية للوحة التحكم:
+```env
+# server/.env
+ADMIN_USER=admin
+ADMIN_PASS=your_strong_password
+JWT_SECRET=any_random_long_string_here
+```
+
+### 4️⃣ التشغيل (Run)
+لتشغيل المشروع (سيقوم هذا الأمر بتشغيل الـ Frontend والـ Backend وقاعدة البيانات معاً):
+```bash
+npm run dev
+```
+
+- 🌐 **الموقع (Frontend):** `http://localhost:5173`
+- 🔐 **واجهة الأدمن (Login):** `http://localhost:5173/admin/login`
+- ⚙️ **الخادم (Backend):** `http://localhost:5001`
+- 🗄️ **قاعدة البيانات (API):** `http://localhost:5000`
+
+---
+
+## 📂 هيكل المشروع (Project Structure)
+```
+aura-eduhub/
+├── public/              # ملفات عامة
+├── server/              # سيرفر الـ Backend (Express + JWT Auth)
+│   ├── index.js
+│   └── .env             # (غير مرفوع على GitHub)
+├── src/                 # ملفات الـ Frontend (React)
+│   ├── assets/          # الصور والأيقونات
+│   ├── components/      # المكونات القابلة لإعادة الاستخدام (Navbar, Footer, الخ)
+│   ├── context/         # إدارة الحالة (AuthContext, ScholarshipContext)
+│   ├── pages/           # صفحات الموقع (Home, AdminDashboard, LoginPage, الخ)
+│   └── services/        # دوال الاتصال بالـ API
+├── db.json              # قاعدة البيانات الوهمية (تُحفظ فيها الطلبات والمنح)
+└── package.json         # مكتبات وسكربتات المشروع
+```
+
+---
+
+## 👤 مطور المشروع (Developer)
+تم التطوير بواسطة **[Hassan Omara]** لصالح منصة Aura EduHub.
