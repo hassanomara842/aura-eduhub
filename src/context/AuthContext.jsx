@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 
-const REPLIT_URL = 'https://f8911b95-5232-429b-b0db-0a39fcaae1f0-00-14fevn8p0m8l0.picard.replit.dev';
+const REPLIT_URL = 'https://aura-eduhub--hassanomara842.replit.app';
 const AUTH_SERVER = import.meta.env.VITE_AUTH_API || REPLIT_URL;
 const AuthContext = createContext(null);
 
