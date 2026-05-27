@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -18,6 +19,7 @@ function App() {
     <AuthProvider>
       <ScholarshipProvider>
         <Router>
+          <ScrollToTop />
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar />
             <main style={{ flex: 1 }}>
