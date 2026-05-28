@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScholarships } from '../context/ScholarshipContext';
 import { useAuth } from '../context/AuthContext';
@@ -68,22 +68,39 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab]   = useState('scholarships'); // scholarships | contacts
   const [contacts, setContacts]     = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const lastContactsLength = useRef(null);
 
-  // Load contacts immediately so the badge shows the correct number globally
+  // Poll for new contacts every 10 seconds
   useEffect(() => {
-    getContacts().then(setContacts).catch(() => setContacts([]));
+    const fetchContacts = async () => {
+      try {
+        const data = await getContacts();
+        if (lastContactsLength.current !== null && data.length > lastContactsLength.current) {
+          // New contact arrived!
+          setToast('🔔 طلب تواصل جديد وصل الآن!');
+          setTimeout(() => setToast(null), 6000);
+          
+          // Play a gentle notification ping
+          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(() => {}); // catch to ignore browser autoplay restrictions if any
+        }
+        lastContactsLength.current = data.length;
+        setContacts(data);
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    };
+
+    // Initial fetch
+    setContactsLoading(true);
+    fetchContacts().finally(() => setContactsLoading(false));
+
+    // Poll every 10 seconds
+    const interval = setInterval(fetchContacts, 10000);
+    return () => clearInterval(interval);
   }, []);
-
-  // Also reload when the tab becomes active to get fresh data
-  useEffect(() => {
-    if (activeTab === 'contacts') {
-      setContactsLoading(true);
-      getContacts()
-        .then(setContacts)
-        .catch(() => setContacts([]))
-        .finally(() => setContactsLoading(false));
-    }
-  }, [activeTab]);
 
   const handleDeleteContact = async (id) => {
     if (!window.confirm('هل تريد حذف هذا الطلب؟')) return;
@@ -110,7 +127,30 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container py-16 animate-fade-in">
+    <div className="container py-16 animate-fade-in" style={{ position: 'relative' }}>
+      
+      {/* ── Toast Notification ── */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '2rem',
+          left: '2rem',
+          backgroundColor: '#10b981',
+          color: 'white',
+          padding: '1rem 1.5rem',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px rgba(16,185,129,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '1.1rem',
+          fontWeight: 'bold',
+          zIndex: 9999,
+          animation: 'slideUp 0.3s ease-out',
+        }}>
+          {toast}
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div className="flex justify-between items-center mb-8">
