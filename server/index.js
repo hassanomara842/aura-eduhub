@@ -170,30 +170,41 @@ async function sendTelegramNotification(contact) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   
-  if (!token || !chatId) return; // Skip if not configured
+  if (!token || !chatId) {
+    console.log('❌ Telegram secrets are missing in process.env!');
+    return;
+  }
 
+  // Use HTML instead of Markdown to avoid escaping issues with user input (like underscores in emails)
   const message = `
-🔔 *طلب تواصل جديد*
-👤 *الاسم:* ${contact.name}
-📞 *الهاتف:* ${contact.phone}
-📧 *الإيميل:* ${contact.email}
-💼 *الخدمة:* ${contact.service || 'استفسار عام'}
-💬 *الرسالة:*
+🔔 <b>طلب تواصل جديد</b>
+👤 <b>الاسم:</b> ${contact.name}
+📞 <b>الهاتف:</b> ${contact.phone}
+📧 <b>الإيميل:</b> ${contact.email}
+💼 <b>الخدمة:</b> ${contact.service || 'استفسار عام'}
+💬 <b>الرسالة:</b>
 ${contact.message || 'لا يوجد'}
   `;
 
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
         text: message,
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
       })
     });
+    
+    const data = await res.json();
+    if (!data.ok) {
+      console.error('❌ Telegram API Error:', data);
+    } else {
+      console.log('✅ Telegram notification sent successfully!');
+    }
   } catch (err) {
-    console.error('❌ Failed to send Telegram notification:', err.message);
+    console.error('❌ Failed to send Telegram notification (Network error):', err.message);
   }
 }
 
