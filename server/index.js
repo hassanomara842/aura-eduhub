@@ -5,13 +5,17 @@ import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
+import mongoose from 'mongoose';
 
-// Load .env manually (dotenv doesn't support ESM well without extra config)
+// Models
+import Admin from './models/Admin.js';
+import Contact from './models/Contact.js';
+import Scholarship from './models/Scholarship.js';
+
+// Load .env manually
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
-// Simple .env parser
 function loadEnv(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
@@ -27,18 +31,67 @@ function loadEnv(filePath) {
     // .env file not found — use defaults
   }
 }
-
 loadEnv(path.join(__dirname, '.env'));
 
 const app = express();
-// Render assigns a port via process.env.PORT
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'baura_jwt_super_secret_2025';
-const DB_PATH    = path.join(__dirname, '..', 'db.json');
+const MONGO_URI = process.env.MONGO_URI;
+const DB_PATH = path.join(__dirname, '..', 'db.json');
 
-// Allow CORS from any origin for production
 app.use(cors());
 app.use(express.json());
+
+// ── MongoDB Connection ─────────────────────────────────────────
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB Atlas');
+    migrateDataIfNeeded();
+  })
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+
+// ── Migration Logic ───────────────────────────────────────────
+async function migrateDataIfNeeded() {
+  try {
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0 && fs.existsSync(DB_PATH)) {
+      console.log('🔄 First run detected. Migrating data from db.json to MongoDB...');
+      const oldDB = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+
+      // Migrate Admins
+      if (oldDB.admins && oldDB.admins.length > 0) {
+        await Admin.insertMany(oldDB.admins);
+        console.log(`✅ Migrated ${oldDB.admins.length} admins.`);
+      } else {
+        // Create default if none
+        await Admin.create({ username: process.env.ADMIN_USER || 'admin', passwordHash: bcrypt.hashSync(process.env.ADMIN_PASS || 'baura@2025', 10), role: 'مدير' });
+      }
+
+      // Migrate Scholarships
+      if (oldDB.scholarships && oldDB.scholarships.length > 0) {
+        await Scholarship.insertMany(oldDB.scholarships);
+        console.log(`✅ Migrated ${oldDB.scholarships.length} scholarships.`);
+      }
+
+      // Migrate Contacts
+      if (oldDB.contacts && oldDB.contacts.length > 0) {
+        // Add timestamp if missing and remove string id for mongo
+        const contactsToMigrate = oldDB.contacts.map(c => {
+           const { id, ...rest } = c;
+           return rest;
+        });
+        await Contact.insertMany(contactsToMigrate);
+        console.log(`✅ Migrated ${oldDB.contacts.length} contacts.`);
+      }
+
+      console.log('🎉 Migration completed successfully!');
+    }
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+  }
+}
+
 
 // ── JWT Middleware ─────────────────────────────────────────────
 function verifyToken(req, res, next) {
@@ -51,134 +104,140 @@ function verifyToken(req, res, next) {
   });
 }
 
-// ── DB helpers ────────────────────────────────────────────────
-const readDB  = () => JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-const writeDB = (data) => fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-
-// ── Initialize Admins in DB ───────────────────────────────────
-function initAdmins() {
-  const db = readDB();
-  if (!db.admins || db.admins.length === 0) {
-    db.admins = [
-      { username: process.env.ADMIN_USER   || 'admin',   passwordHash: bcrypt.hashSync(process.env.ADMIN_PASS   || 'baura@2025', 10), role: 'مدير' },
-      { username: process.env.MANAGER_USER || 'manager', passwordHash: bcrypt.hashSync(process.env.MANAGER_PASS || 'baura@mgr1', 10), role: 'مسئول' },
-    ];
-    writeDB(db);
-    console.log('✅ Admins initialized in database');
-  }
-}
-initAdmins();
-
 // ══════════════════════════════════════════════════════════════
 // ROUTES
 // ══════════════════════════════════════════════════════════════
 
 // POST /api/login
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body || {};
-  if (!username || !password) return res.status(400).json({ error: 'بيانات ناقصة' });
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) return res.status(400).json({ error: 'بيانات ناقصة' });
 
-  const db = readDB();
-  const admin = (db.admins || []).find(a => a.username === username.trim());
-  if (!admin || !bcrypt.compareSync(password.trim(), admin.passwordHash)) {
-    return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    const admin = await Admin.findOne({ username: username.trim() });
+    if (!admin || !bcrypt.compareSync(password.trim(), admin.passwordHash)) {
+      return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    }
+
+    const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '8h' });
+    console.log(`✅ Login: ${admin.username} (${admin.role})`);
+    res.json({ token, username: admin.username, role: admin.role });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '8h' });
-  console.log(`✅ Login: ${admin.username} (${admin.role})`);
-  res.json({ token, username: admin.username, role: admin.role });
 });
 
-// PUT /api/admin/credentials — Change Username & Password
-app.put('/api/admin/credentials', verifyToken, (req, res) => {
-  const { currentPassword, newUsername, newPassword } = req.body;
-  if (!currentPassword || !newUsername || !newPassword) {
-    return res.status(400).json({ error: 'بيانات ناقصة' });
+// PUT /api/admin/credentials
+app.put('/api/admin/credentials', verifyToken, async (req, res) => {
+  try {
+    const { currentPassword, newUsername, newPassword } = req.body;
+    if (!currentPassword || !newUsername || !newPassword) {
+      return res.status(400).json({ error: 'بيانات ناقصة' });
+    }
+
+    const admin = await Admin.findOne({ username: req.user.username });
+    if (!admin) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+    if (!bcrypt.compareSync(currentPassword, admin.passwordHash)) {
+      return res.status(401).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+    }
+
+    admin.username = newUsername.trim();
+    admin.passwordHash = bcrypt.hashSync(newPassword.trim(), 10);
+    await admin.save();
+
+    console.log(`🔒 Credentials updated for: ${newUsername}`);
+    res.json({ success: true, message: 'تم تحديث البيانات بنجاح' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  const db = readDB();
-  const adminIndex = db.admins.findIndex(a => a.username === req.user.username);
-  if (adminIndex === -1) return res.status(404).json({ error: 'المستخدم غير موجود' });
-
-  const admin = db.admins[adminIndex];
-  if (!bcrypt.compareSync(currentPassword, admin.passwordHash)) {
-    return res.status(401).json({ error: 'كلمة المرور الحالية غير صحيحة' });
-  }
-
-  // Update credentials
-  db.admins[adminIndex].username = newUsername.trim();
-  db.admins[adminIndex].passwordHash = bcrypt.hashSync(newPassword.trim(), 10);
-  writeDB(db);
-
-  console.log(`🔒 Credentials updated for: ${newUsername}`);
-  res.json({ success: true, message: 'تم تحديث البيانات بنجاح' });
 });
 
 // ── Contacts API ──────────────────────────────────────────────
 
-// GET /api/contacts — JWT required
-app.get('/api/contacts', verifyToken, (req, res) => {
-  res.json(readDB().contacts || []);
+app.get('/api/contacts', verifyToken, async (req, res) => {
+  try {
+    const contacts = await Contact.find().sort({ createdAt: -1 });
+    // Map _id to id for frontend compatibility
+    res.json(contacts.map(c => ({ ...c.toObject(), id: c._id.toString() })));
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// POST /api/contacts — public (from contact form)
-app.post('/api/contacts', (req, res) => {
-  const db = readDB();
-  const newContact = {
-    id: Date.now().toString(),
-    ...req.body,
-    submittedAt: new Date().toISOString(),
-    status: 'جديد',
-  };
-  db.contacts = [...(db.contacts || []), newContact];
-  writeDB(db);
-  console.log(`📩 New contact: ${newContact.name}`);
-  res.status(201).json(newContact);
+app.post('/api/contacts', async (req, res) => {
+  try {
+    const newContact = new Contact(req.body);
+    await newContact.save();
+    console.log(`📩 New contact: ${newContact.name}`);
+    res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// DELETE /api/contacts/:id — JWT required
-app.delete('/api/contacts/:id', verifyToken, (req, res) => {
-  const db = readDB();
-  db.contacts = (db.contacts || []).filter(c => c.id !== req.params.id);
-  writeDB(db);
-  console.log(`🗑️  Deleted contact: ${req.params.id}`);
-  res.json({ success: true });
+app.delete('/api/contacts/:id', verifyToken, async (req, res) => {
+  try {
+    await Contact.findByIdAndDelete(req.params.id);
+    console.log(`🗑️  Deleted contact: ${req.params.id}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// ── Scholarships API (replaces json-server) ───────────────────
+// ── Scholarships API ──────────────────────────────────────────
 
-app.get('/scholarships', (req, res) => {
-  res.json(readDB().scholarships || []);
+app.get('/scholarships', async (req, res) => {
+  try {
+    const scholarships = await Scholarship.find().sort({ createdAt: -1 });
+    res.json(scholarships.map(s => ({ ...s.toObject(), id: s.id })));
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.get('/scholarships/:id', (req, res) => {
-  const scholarship = (readDB().scholarships || []).find(s => s.id === req.params.id);
-  if (!scholarship) return res.status(404).json({ error: 'Not found' });
-  res.json(scholarship);
+app.get('/scholarships/:id', async (req, res) => {
+  try {
+    const scholarship = await Scholarship.findOne({ id: req.params.id });
+    if (!scholarship) return res.status(404).json({ error: 'Not found' });
+    res.json(scholarship);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.post('/scholarships', verifyToken, (req, res) => {
-  const db = readDB();
-  const newScholarship = { id: Date.now().toString(), ...req.body };
-  db.scholarships = [...(db.scholarships || []), newScholarship];
-  writeDB(db);
-  res.status(201).json(newScholarship);
+app.post('/scholarships', verifyToken, async (req, res) => {
+  try {
+    const newScholarship = new Scholarship({ ...req.body, id: Date.now().toString() });
+    await newScholarship.save();
+    res.status(201).json(newScholarship);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.put('/scholarships/:id', verifyToken, (req, res) => {
-  const db = readDB();
-  const index = (db.scholarships || []).findIndex(s => s.id === req.params.id);
-  if (index === -1) return res.status(404).json({ error: 'Not found' });
-  db.scholarships[index] = { ...db.scholarships[index], ...req.body };
-  writeDB(db);
-  res.json(db.scholarships[index]);
+app.put('/scholarships/:id', verifyToken, async (req, res) => {
+  try {
+    const scholarship = await Scholarship.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: req.body },
+      { new: true }
+    );
+    if (!scholarship) return res.status(404).json({ error: 'Not found' });
+    res.json(scholarship);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-app.delete('/scholarships/:id', verifyToken, (req, res) => {
-  const db = readDB();
-  db.scholarships = (db.scholarships || []).filter(s => s.id !== req.params.id);
-  writeDB(db);
-  res.json({ success: true });
+app.delete('/scholarships/:id', verifyToken, async (req, res) => {
+  try {
+    await Scholarship.findOneAndDelete({ id: req.params.id });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Health check
