@@ -208,6 +208,25 @@ ${contact.message || 'لا يوجد'}
   }
 }
 
+app.get('/api/test-telegram', async (req, res) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    return res.json({ error: 'Secrets missing', token_exists: !!token, chat_exists: !!chatId });
+  }
+  try {
+    const apiRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: 'Test from API Endpoint' })
+    });
+    const data = await apiRes.json();
+    res.json({ success: true, api_response: data });
+  } catch (err) {
+    res.json({ error: 'Network Error', details: err.message });
+  }
+});
+
 app.post('/api/contacts', async (req, res) => {
   try {
     const newContact = new Contact(req.body);
