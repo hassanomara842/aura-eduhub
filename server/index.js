@@ -165,11 +165,47 @@ app.get('/api/contacts', verifyToken, async (req, res) => {
   }
 });
 
+// ── Telegram Notification Helper ──────────────────────────────
+async function sendTelegramNotification(contact) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  
+  if (!token || !chatId) return; // Skip if not configured
+
+  const message = `
+🔔 *طلب تواصل جديد*
+👤 *الاسم:* ${contact.name}
+📞 *الهاتف:* ${contact.phone}
+📧 *الإيميل:* ${contact.email}
+💼 *الخدمة:* ${contact.service || 'استفسار عام'}
+💬 *الرسالة:*
+${contact.message || 'لا يوجد'}
+  `;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown'
+      })
+    });
+  } catch (err) {
+    console.error('❌ Failed to send Telegram notification:', err.message);
+  }
+}
+
 app.post('/api/contacts', async (req, res) => {
   try {
     const newContact = new Contact(req.body);
     await newContact.save();
     console.log(`📩 New contact: ${newContact.name}`);
+    
+    // Send Telegram notification in the background
+    sendTelegramNotification(newContact);
+    
     res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
