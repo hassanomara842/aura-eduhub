@@ -69,7 +69,12 @@ export default function AdminDashboard() {
   const [contacts, setContacts]     = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
 
-  // Load contacts when tab is active
+  // Load contacts immediately so the badge shows the correct number globally
+  useEffect(() => {
+    getContacts().then(setContacts).catch(() => setContacts([]));
+  }, []);
+
+  // Also reload when the tab becomes active to get fresh data
   useEffect(() => {
     if (activeTab === 'contacts') {
       setContactsLoading(true);
