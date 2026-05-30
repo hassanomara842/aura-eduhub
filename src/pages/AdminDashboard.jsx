@@ -459,6 +459,8 @@ export default function AdminDashboard() {
           </form>
         </div>
       )}
+        </div>
+      )}
     </>
   );
 }
