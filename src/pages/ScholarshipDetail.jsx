@@ -300,7 +300,7 @@ export default function ScholarshipDetail() {
                   <div style={{ textAlign: 'right' }}>
                     <div>التقديم من خلالنا</div>
                     <div style={{ fontSize: '0.8rem', fontWeight: '400', opacity: 0.85 }}>
-                      فريق مسيرتك يساعدك خطوة بخطوة
+                      فريق Aura EduHub يساعدك خطوة بخطوة
                     </div>
                   </div>
                 </div>
