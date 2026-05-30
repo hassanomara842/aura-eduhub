@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useScholarships } from '../context/ScholarshipContext';
 import { Plus, Trash2, UploadCloud } from 'lucide-react';
 
-export default function ScholarshipForm({ scholarshipId, onClose }) {
+export default function ScholarshipForm({ scholarshipId, onClose, onSuccess, onError }) {
   const { scholarships, add, update } = useScholarships();
   
   const initialFormState = {
@@ -101,15 +101,16 @@ export default function ScholarshipForm({ scholarshipId, onClose }) {
     try {
       if (scholarshipId) {
         await update(scholarshipId, formData);
+        if (onSuccess) onSuccess('✅ تم تعديل المنحة بنجاح!');
       } else {
         // Generate a simple ID if not provided (for creation)
         const newId = formData.id || formData.title.toLowerCase().replace(/\s+/g, '-');
         await add({ ...formData, id: newId });
+        if (onSuccess) onSuccess('✅ تم إضافة المنحة بنجاح!');
       }
-      onClose();
     } catch (err) {
       console.error("Error saving scholarship:", err);
-      alert("حدث خطأ أثناء الحفظ");
+      if (onError) onError('❌ حدث خطأ أثناء الحفظ. تأكد من حجم الصورة أو حالة السيرفر.');
     } finally {
       setIsSubmitting(false);
     }

@@ -71,6 +71,11 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState(null);
   const lastContactsLength = useRef(null);
 
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 6000);
+  };
+
   // Fetch contacts initially and poll every 10 seconds (only when on contacts tab)
   useEffect(() => {
     const fetchContacts = async () => {
@@ -78,8 +83,7 @@ export default function AdminDashboard() {
         const data = await getContacts();
         if (lastContactsLength.current !== null && data.length > lastContactsLength.current) {
           // New contact arrived!
-          setToast('🔔 طلب تواصل جديد وصل الآن!');
-          setTimeout(() => setToast(null), 6000);
+          showToast('🔔 طلب تواصل جديد وصل الآن!', 'success');
           
           // Play a gentle notification ping
           const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -116,32 +120,38 @@ export default function AdminDashboard() {
   const handleCreate = ()   => { setEditingId(null); setIsCreating(true); };
   const handleClose  = ()   => { setEditingId(null); setIsCreating(false); };
   const handleDelete = async (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذه المنحة؟')) await remove(id);
+    if (window.confirm('هل أنت متأكد من حذف هذه المنحة؟')) {
+      try {
+        await remove(id);
+        showToast('🗑️ تم حذف المنحة بنجاح!', 'success');
+      } catch {
+        showToast('❌ حدث خطأ أثناء الحذف!', 'error');
+      }
+    }
   };
 
-  if (isCreating || editingId) {
-    return (
-      <div className="container py-8 animate-fade-in">
-        <button onClick={handleClose} className="btn btn-outline mb-4">العودة للوحة التحكم</button>
-        <ScholarshipForm scholarshipId={editingId} onClose={handleClose} />
-      </div>
-    );
-  }
+  const handleSuccess = (msg) => {
+    handleClose();
+    showToast(msg, 'success');
+  };
+
+  const handleError = (msg) => {
+    showToast(msg, 'error');
+  };
 
   return (
-    <div className="container py-16 animate-fade-in" style={{ position: 'relative' }}>
-      
+    <>
       {/* ── Toast Notification ── */}
       {toast && (
         <div style={{
           position: 'fixed',
           bottom: '2rem',
           left: '2rem',
-          backgroundColor: '#10b981',
+          backgroundColor: toast.type === 'error' ? '#ef4444' : '#10b981',
           color: 'white',
           padding: '1rem 1.5rem',
           borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(16,185,129,0.3)',
+          boxShadow: `0 10px 25px ${toast.type === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
@@ -150,9 +160,23 @@ export default function AdminDashboard() {
           zIndex: 9999,
           animation: 'slideUp 0.3s ease-out',
         }}>
-          {toast}
+          {toast.message}
         </div>
       )}
+
+      {isCreating || editingId ? (
+        <div className="container py-8 animate-fade-in">
+          <button onClick={handleClose} className="btn btn-outline mb-4">العودة للوحة التحكم</button>
+          <ScholarshipForm 
+            scholarshipId={editingId} 
+            onClose={handleClose} 
+            onSuccess={handleSuccess} 
+            onError={handleError} 
+          />
+        </div>
+      ) : (
+        <div className="container py-16 animate-fade-in" style={{ position: 'relative' }}>
+
 
       {/* ── Header ── */}
       <div className="flex justify-between items-center mb-8">
@@ -435,6 +459,6 @@ export default function AdminDashboard() {
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 }
