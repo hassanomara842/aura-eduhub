@@ -15,7 +15,7 @@ function exportToExcel(contacts) {
     c.phone,
     c.service || 'استفسار عام',
     c.message,
-    c.submittedAt ? new Date(c.submittedAt).toLocaleString('ar-EG') : '',
+    c.submittedAt || c.createdAt ? new Date(c.submittedAt || c.createdAt).toLocaleString('ar-EG') : '',
     c.status || 'جديد',
   ]);
 
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState(null);
   const lastContactsLength = useRef(null);
 
-  // Poll for new contacts every 10 seconds
+  // Fetch contacts initially and poll every 10 seconds (only when on contacts tab)
   useEffect(() => {
     const fetchContacts = async () => {
       try {
@@ -93,14 +93,16 @@ export default function AdminDashboard() {
       }
     };
 
-    // Initial fetch
+    // Initial fetch always (to get badge count)
     setContactsLoading(true);
     fetchContacts().finally(() => setContactsLoading(false));
 
-    // Poll every 10 seconds
+    // Only poll actively when on the contacts tab
+    if (activeTab !== 'contacts') return;
+
     const interval = setInterval(fetchContacts, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTab]);
 
   const handleDeleteContact = async (id) => {
     if (!window.confirm('هل تريد حذف هذا الطلب؟')) return;
@@ -341,9 +343,9 @@ export default function AdminDashboard() {
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {c.message || '—'}
                     </p>
-                    {c.submittedAt && (
+                    {(c.submittedAt || c.createdAt) && (
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <Clock size={12} /> {new Date(c.submittedAt).toLocaleString('ar-EG')}
+                        <Clock size={12} /> {new Date(c.submittedAt || c.createdAt).toLocaleString('ar-EG')}
                       </div>
                     )}
                   </div>

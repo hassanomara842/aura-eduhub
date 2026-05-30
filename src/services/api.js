@@ -37,7 +37,7 @@ export const getScholarshipById = async (id) => {
 export const createScholarship = async (data) => {
   const res = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create scholarship');
@@ -47,7 +47,7 @@ export const createScholarship = async (data) => {
 export const updateScholarship = async (id, data) => {
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update scholarship');
@@ -57,6 +57,7 @@ export const updateScholarship = async (id, data) => {
 export const deleteScholarship = async (id) => {
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to delete scholarship');
   return res.json();
