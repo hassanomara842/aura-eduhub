@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ScholarshipCard from '../components/ScholarshipCard';
 import { useScholarships } from '../context/ScholarshipContext';
 import { Search } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function Scholarships() {
   const { scholarships, loading } = useScholarships();
@@ -20,6 +21,7 @@ export default function Scholarships() {
 
   return (
     <div className="container py-16 animate-fade-in">
+      <SEO title="تصفح جميع المنح" />
       <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <h1 style={{ fontSize: '3rem', color: 'var(--primary-dark)', marginBottom: '1rem' }}>المنح الدراسية المتاحة</h1>
         <p style={{ maxWidth: '700px', margin: '0 auto', fontSize: '1.125rem' }}>

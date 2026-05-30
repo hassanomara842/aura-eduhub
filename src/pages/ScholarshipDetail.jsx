@@ -4,6 +4,8 @@ import {
   MapPin, Calendar, CheckCircle2, Users, Star, FileText,
   ExternalLink, ArrowRight, BookOpen, Award, ChevronRight
 } from 'lucide-react';
+import SEO from '../components/SEO';
+import AdBanner from '../components/AdBanner';
 
 export default function ScholarshipDetail() {
   const { id } = useParams();
@@ -73,6 +75,11 @@ export default function ScholarshipDetail() {
 
   return (
     <div className="animate-fade-in" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
+      <SEO 
+        title={scholarship.title} 
+        description={`تفاصيل ${scholarship.title} في ${scholarship.country}. التمويل: ${scholarship.coverage}. التقديم الآن عبر منصة Aura EduHub.`}
+        image={scholarship.image}
+      />
 
       {/* Hero Banner */}
       <div style={{
@@ -320,6 +327,9 @@ export default function ScholarshipDetail() {
           </div>
 
         </div>
+
+        {/* Unobtrusive Ad Banner at the bottom of the content */}
+        <AdBanner />
 
         {/* Back Button */}
         <div style={{ marginTop: '3rem', textAlign: 'center' }}>

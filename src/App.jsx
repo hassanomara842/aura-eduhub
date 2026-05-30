@@ -13,36 +13,39 @@ import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ScholarshipProvider } from './context/ScholarshipContext';
 import { AuthProvider } from './context/AuthContext';
+import { HelmetProvider } from 'react-helmet-async';
 
 function App() {
   return (
-    <AuthProvider>
-      <ScholarshipProvider>
-        <Router>
-          <ScrollToTop />
-          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Navbar />
-            <main style={{ flex: 1 }}>
-              <Routes>
-                <Route path="/"                   element={<Home />} />
-                <Route path="/about"              element={<About />} />
-                <Route path="/scholarships"       element={<Scholarships />} />
-                <Route path="/scholarships/:id"   element={<ScholarshipDetail />} />
-                <Route path="/services"           element={<Services />} />
-                <Route path="/contact"            element={<Contact />} />
-                <Route path="/admin/login"        element={<LoginPage />} />
-                <Route path="/admin" element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
-      </ScholarshipProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <ScholarshipProvider>
+          <Router>
+            <ScrollToTop />
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+              <Navbar />
+              <main style={{ flex: 1 }}>
+                <Routes>
+                  <Route path="/"                   element={<Home />} />
+                  <Route path="/about"              element={<About />} />
+                  <Route path="/scholarships"       element={<Scholarships />} />
+                  <Route path="/scholarships/:id"   element={<ScholarshipDetail />} />
+                  <Route path="/services"           element={<Services />} />
+                  <Route path="/contact"            element={<Contact />} />
+                  <Route path="/admin/login"        element={<LoginPage />} />
+                  <Route path="/admin" element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </ScholarshipProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 

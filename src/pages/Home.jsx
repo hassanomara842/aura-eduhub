@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Award, BookOpen, Users } from 'lucide-react';
 import ServiceCard from '../components/ServiceCard';
 import ScholarshipCard from '../components/ScholarshipCard';
-
+import SEO from '../components/SEO';
 import { useScholarships } from '../context/ScholarshipContext';
 
 export default function Home() {
@@ -13,6 +13,7 @@ export default function Home() {
 
   return (
     <div>
+      <SEO />
       {/* Hero Section */}
       <section style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '6rem 0', position: 'relative', overflow: 'hidden' }}>
         {/* Abstract background shapes */}
