@@ -39,7 +39,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'baura_jwt_super_secret_2025';
 const MONGO_URI = process.env.MONGO_URI;
 const DB_PATH = path.join(__dirname, '..', 'db.json');
 
-app.use(cors());
+const allowedOrigins = [
+  'https://aura-eduhub.netlify.app', 
+  'http://localhost:5000', 
+  'http://127.0.0.1:5000',
+  'http://localhost:5173'
+];
+
+const strictCors = cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('Unauthorized Origin'));
+  }
+});
+
+// Allow any origin to report theft, but strictly lock everything else
+app.use('/api/report-theft', cors());
+app.use(strictCors);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -208,6 +227,33 @@ ${contact.message || 'لا يوجد'}
     console.error('❌ Failed to send Telegram notification (Network error):', err.message);
   }
 }
+
+app.post('/api/report-theft', async (req, res) => {
+  try {
+    const { domain, url, time } = req.body;
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    
+    if (token && chatId) {
+      const message = `
+🚨 <b>إنذار سرقة الكود المصدري!</b> 🚨
+تم تشغيل الواجهة الأمامية الخاصة بك على نطاق غير مصرح به:
+🌐 <b>النطاق:</b> ${domain}
+🔗 <b>الرابط الكامل:</b> ${url}
+⏰ <b>الوقت:</b> ${time}
+      `;
+      
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
+      });
+    }
+    res.json({ status: 'reported' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 app.get('/api/test-telegram', async (req, res) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
