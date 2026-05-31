@@ -6,13 +6,14 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import AdBanner from '../components/AdBanner';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function ScholarshipDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { scholarships, loading } = useScholarships();
   
-  if (loading) return <div className="container py-16 text-center">جاري تحميل البيانات...</div>;
+  if (loading) return <LoadingSpinner />;
 
   const scholarship = scholarships.find((s) => s.id === id);
 

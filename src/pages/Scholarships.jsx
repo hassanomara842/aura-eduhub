@@ -3,13 +3,14 @@ import ScholarshipCard from '../components/ScholarshipCard';
 import { useScholarships } from '../context/ScholarshipContext';
 import { Search } from 'lucide-react';
 import SEO from '../components/SEO';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Scholarships() {
   const { scholarships, loading } = useScholarships();
   const [query, setQuery] = useState('');
   const [country, setCountry] = useState('');
 
-  if (loading) return <div className="container py-16 text-center">جاري تحميل البيانات...</div>;
+  if (loading) return <LoadingSpinner />;
 
   const filtered = scholarships.filter((s) => {
     const matchQuery = !query || s.title.includes(query) || s.country.includes(query);

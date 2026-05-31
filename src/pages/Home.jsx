@@ -4,12 +4,13 @@ import ServiceCard from '../components/ServiceCard';
 import ScholarshipCard from '../components/ScholarshipCard';
 import SEO from '../components/SEO';
 import { useScholarships } from '../context/ScholarshipContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Home() {
   const { scholarships, loading } = useScholarships();
   const featuredScholarships = scholarships.slice(0, 3);
 
-  if (loading) return <div className="container py-16 text-center">جاري تحميل البيانات...</div>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
