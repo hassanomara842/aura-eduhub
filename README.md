@@ -35,7 +35,7 @@
 ---
 
 ## 👤 مطور المشروع (Developer)
-تم التطوير بواسطة **[Hassan Omara]** لصالح منصة Aura EduHub.
+تم التطوير بواسطة **[Hassan Tech / Hassan Omara]** لصالح منصة Aura EduHub.
 
 ## 🚨 تحذير هام: حقوق الملكية الفكرية والأمان 🚨
 
