@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { createContact } from '../services/api';
+import AdBanner from '../components/AdBanner';
 
 export default function Contact() {
   const location = useLocation();
@@ -190,6 +191,11 @@ export default function Contact() {
             </button>
           </form>
         </div>
+      </div>
+      
+      {/* Adsterra Banner */}
+      <div style={{ marginTop: '3rem' }}>
+        <AdBanner />
       </div>
     </div>
   );

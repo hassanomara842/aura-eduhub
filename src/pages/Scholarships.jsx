@@ -4,6 +4,7 @@ import { useScholarships } from '../context/ScholarshipContext';
 import { Search } from 'lucide-react';
 import SEO from '../components/SEO';
 import LoadingSpinner from '../components/LoadingSpinner';
+import AdBanner from '../components/AdBanner';
 
 export default function Scholarships() {
   const { scholarships, loading } = useScholarships();
@@ -64,6 +65,11 @@ export default function Scholarships() {
             <p style={{ fontSize: '1.25rem' }}>لا توجد منح تطابق بحثك. حاول كلمة مختلفة.</p>
           </div>
         )}
+      </div>
+
+      {/* Adsterra Banner */}
+      <div style={{ marginTop: '3rem' }}>
+        <AdBanner />
       </div>
     </div>
   );

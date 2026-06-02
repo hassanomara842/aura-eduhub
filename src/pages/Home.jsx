@@ -5,6 +5,7 @@ import ScholarshipCard from '../components/ScholarshipCard';
 import SEO from '../components/SEO';
 import { useScholarships } from '../context/ScholarshipContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import AdBanner from '../components/AdBanner';
 
 export default function Home() {
   const { scholarships, loading } = useScholarships();
@@ -78,6 +79,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Adsterra Banner */}
+      <div className="container py-4">
+        <AdBanner />
+      </div>
 
       {/* Why Us / Services Summary */}
       <section className="py-16" style={{ backgroundColor: 'var(--surface)' }}>
