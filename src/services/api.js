@@ -1,10 +1,10 @@
 const REPLIT_URL = 'https://aura-eduhub.vercel.app';
 
 // ── Scholarships ──────────────────
-const API_URL = import.meta.env.VITE_SCHOLARSHIPS_API || `${REPLIT_URL}/scholarships`;
+const API_URL = `${REPLIT_URL}/scholarships`;
 
 // ── Contacts (Express auth server — protected) ────────────────
-const AUTH_SERVER = import.meta.env.VITE_AUTH_API || REPLIT_URL;
+const AUTH_SERVER = REPLIT_URL;
 
 // Helper: get JWT token from session
 function getAuthHeaders() {
