@@ -59,4 +59,19 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    host: '0.0.0.0',
+    port: 5000,
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5005',
+        changeOrigin: true,
+      },
+      '/scholarships': {
+        target: 'http://localhost:5005',
+        changeOrigin: true,
+      },
+    },
+  },
 })
