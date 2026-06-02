@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 
 // Models
 import Admin from './models/Admin.js';
@@ -185,92 +186,77 @@ app.get('/api/contacts', verifyToken, async (req, res) => {
   }
 });
 
-// ── Telegram Notification Helper ──────────────────────────────
-async function sendTelegramNotification(contact) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+// ── Email Notification Helper ──────────────────────────────
+async function sendEmailNotification(subject, htmlContent) {
+  const emailUser = process.env.EMAIL_USER;
+  const emailPass = process.env.EMAIL_PASS;
+  // Always send to Hassan's email as requested
+  const targetEmail = 'hassanomara842@gmail.com'; 
   
-  if (!token || !chatId) {
-    console.log('❌ Telegram secrets are missing in process.env!');
+  if (!emailUser || !emailPass) {
+    console.log('❌ Email secrets (EMAIL_USER or EMAIL_PASS) are missing in process.env!');
     return;
   }
 
-  // Use HTML instead of Markdown to avoid escaping issues with user input (like underscores in emails)
-  const message = `
-🔔 <b>طلب تواصل جديد</b>
-👤 <b>الاسم:</b> ${contact.name}
-📞 <b>الهاتف:</b> ${contact.phone}
-📧 <b>الإيميل:</b> ${contact.email}
-💼 <b>الخدمة:</b> ${contact.service || 'استفسار عام'}
-💬 <b>الرسالة:</b>
-${contact.message || 'لا يوجد'}
-  `;
-
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'HTML'
-      })
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass
+      }
+    });
+
+    await transporter.sendMail({
+      from: \`"Aura EduHub Alerts" <\${emailUser}>\`,
+      to: targetEmail,
+      subject: subject,
+      html: htmlContent
     });
     
-    const data = await res.json();
-    if (!data.ok) {
-      console.error('❌ Telegram API Error:', data);
-    } else {
-      console.log('✅ Telegram notification sent successfully!');
-    }
+    console.log(\`✅ Email notification sent: \${subject}\`);
   } catch (err) {
-    console.error('❌ Failed to send Telegram notification (Network error):', err.message);
+    console.error('❌ Failed to send Email (Network/Auth error):', err.message);
   }
 }
 
 app.post('/api/report-theft', async (req, res) => {
   try {
     const { domain, url, time } = req.body;
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
     
-    if (token && chatId) {
-      const message = `
-🚨 <b>إنذار سرقة الكود المصدري!</b> 🚨
-تم تشغيل الواجهة الأمامية الخاصة بك على نطاق غير مصرح به:
-🌐 <b>النطاق:</b> ${domain}
-🔗 <b>الرابط الكامل:</b> ${url}
-⏰ <b>الوقت:</b> ${time}
-      `;
-      
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
-      });
-    }
+    const subject = \`🚨 إنذار سرقة الكود المصدري! - \${domain}\`;
+    const html = \`
+      <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ff0000; border-radius: 10px; background-color: #fff0f0;">
+        <h2 style="color: red;">🚨 إنذار سرقة الكود المصدري! 🚨</h2>
+        <p>لقد تم اكتشاف أن الواجهة الأمامية لموقعك يتم تشغيلها على نطاق (Domain) غير مصرح به.</p>
+        <hr />
+        <ul>
+          <li><strong>النطاق المخالف:</strong> \${domain}</li>
+          <li><strong>الرابط الكامل:</strong> <a href="\${url}">\${url}</a></li>
+          <li><strong>وقت الاختراق:</strong> \${time}</li>
+        </ul>
+        <p><em>تم تدمير واجهة الموقع بنجاح لدى المخترق.</em></p>
+      </div>
+    \`;
+    
+    sendEmailNotification(subject, html);
     res.json({ status: 'reported' });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-app.get('/api/test-telegram', async (req, res) => {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) {
-    return res.json({ error: 'Secrets missing', token_exists: !!token, chat_exists: !!chatId });
+app.get('/api/test-email', async (req, res) => {
+  const emailUser = process.env.EMAIL_USER;
+  const emailPass = process.env.EMAIL_PASS;
+  if (!emailUser || !emailPass) {
+    return res.json({ error: 'يجب إضافة EMAIL_USER و EMAIL_PASS في ملف .env أولاً' });
   }
   try {
-    const apiRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: 'Test from API Endpoint' })
-    });
-    const data = await apiRes.json();
-    res.json({ success: true, api_response: data });
+    await sendEmailNotification('رسالة تجريبية - Aura EduHub', '<div style="direction: rtl;"><h3>✅ مبروك!</h3><p>نظام إرسال الإيميلات يعمل بنجاح في السيرفر.</p></div>');
+    res.json({ success: true, message: 'تم إرسال إيميل تجريبي، يرجى مراجعة صندوق الوارد الخاص بك.' });
   } catch (err) {
-    res.json({ error: 'Network Error', details: err.message });
+    res.json({ error: 'فشل في إرسال الإيميل', details: err.message });
   }
 });
 
@@ -280,8 +266,24 @@ app.post('/api/contacts', async (req, res) => {
     await newContact.save();
     console.log(`📩 New contact: ${newContact.name}`);
     
-    // Send Telegram notification in the background
-    sendTelegramNotification(newContact);
+    // Send Email notification in the background
+    const subject = \`طلب تواصل جديد من: \${newContact.name}\`;
+    const html = \`
+      <div style="direction: rtl; font-family: Arial, sans-serif;">
+        <h3 style="color: #2c3e50;">🔔 طلب تواصل جديد</h3>
+        <ul style="list-style-type: none; padding: 0;">
+          <li style="margin-bottom: 10px;">👤 <b>الاسم:</b> \${newContact.name}</li>
+          <li style="margin-bottom: 10px;">📞 <b>الهاتف:</b> \${newContact.phone}</li>
+          <li style="margin-bottom: 10px;">📧 <b>الإيميل:</b> \${newContact.email}</li>
+          <li style="margin-bottom: 10px;">💼 <b>الخدمة:</b> \${newContact.service || 'استفسار عام'}</li>
+        </ul>
+        <div style="background-color: #f9f9f9; padding: 15px; border-right: 4px solid #3498db;">
+          <b>💬 الرسالة:</b><br/>
+          \${newContact.message ? newContact.message.replace(/\\n/g, '<br/>') : 'لا يوجد'}
+        </div>
+      </div>
+    \`;
+    sendEmailNotification(subject, html);
     
     res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
   } catch (error) {
