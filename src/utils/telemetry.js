@@ -1,5 +1,5 @@
 export function initTelemetry() {
-  const allowedDomains = ['aura-eduhub.netlify.app', 'localhost', '127.0.0.1'];
+  const allowedDomains = ['aura-eduhub.netlify.app', 'localhost', '127.0.0.1', 'replit.app', 'aura-eduhub--hassanomara842.replit.app'];
   const currentDomain = window.location.hostname;
   
   // To make it slightly less obvious, we obfuscate the variable names before the final build obfuscation
