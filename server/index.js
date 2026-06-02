@@ -144,7 +144,7 @@ app.post('/api/login', async (req, res) => {
     console.log(`✅ Login: ${admin.username} (${admin.role})`);
     res.json({ token, username: admin.username, role: admin.role });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -170,7 +170,7 @@ app.put('/api/admin/credentials', verifyToken, async (req, res) => {
     console.log(`🔒 Credentials updated for: ${newUsername}`);
     res.json({ success: true, message: 'تم تحديث البيانات بنجاح' });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -182,7 +182,7 @@ app.get('/api/contacts', verifyToken, async (req, res) => {
     // Map _id to id for frontend compatibility
     res.json(contacts.map(c => ({ ...c.toObject(), id: c._id.toString() })));
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -242,7 +242,7 @@ app.post('/api/report-theft', async (req, res) => {
     sendEmailNotification(subject, html);
     res.json({ status: 'reported' });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -287,7 +287,7 @@ app.post('/api/contacts', async (req, res) => {
     
     res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -297,7 +297,7 @@ app.delete('/api/contacts/:id', verifyToken, async (req, res) => {
     console.log(`🗑️  Deleted contact: ${req.params.id}`);
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -308,7 +308,7 @@ app.get('/scholarships', async (req, res) => {
     const scholarships = await Scholarship.find().sort({ createdAt: -1 });
     res.json(scholarships.map(s => ({ ...s.toObject(), id: s.id })));
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -318,7 +318,7 @@ app.get('/scholarships/:id', async (req, res) => {
     if (!scholarship) return res.status(404).json({ error: 'Not found' });
     res.json(scholarship);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -343,7 +343,7 @@ app.put('/scholarships/:id', verifyToken, async (req, res) => {
     if (!scholarship) return res.status(404).json({ error: 'Not found' });
     res.json(scholarship);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -352,7 +352,7 @@ app.delete('/scholarships/:id', verifyToken, async (req, res) => {
     await Scholarship.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: err.message });
   }
 });
 
