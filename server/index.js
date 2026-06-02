@@ -208,13 +208,13 @@ async function sendEmailNotification(subject, htmlContent) {
     });
 
     await transporter.sendMail({
-      from: \`"Aura EduHub Alerts" <\${emailUser}>\`,
+      from: `"Aura EduHub Alerts" <${emailUser}>`,
       to: targetEmail,
       subject: subject,
       html: htmlContent
     });
     
-    console.log(\`✅ Email notification sent: \${subject}\`);
+    console.log(`✅ Email notification sent: ${subject}`);
   } catch (err) {
     console.error('❌ Failed to send Email (Network/Auth error):', err.message);
   }
@@ -224,20 +224,20 @@ app.post('/api/report-theft', async (req, res) => {
   try {
     const { domain, url, time } = req.body;
     
-    const subject = \`🚨 إنذار سرقة الكود المصدري! - \${domain}\`;
-    const html = \`
+    const subject = `🚨 إنذار سرقة الكود المصدري! - ${domain}`;
+    const html = `
       <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ff0000; border-radius: 10px; background-color: #fff0f0;">
         <h2 style="color: red;">🚨 إنذار سرقة الكود المصدري! 🚨</h2>
         <p>لقد تم اكتشاف أن الواجهة الأمامية لموقعك يتم تشغيلها على نطاق (Domain) غير مصرح به.</p>
         <hr />
         <ul>
-          <li><strong>النطاق المخالف:</strong> \${domain}</li>
-          <li><strong>الرابط الكامل:</strong> <a href="\${url}">\${url}</a></li>
-          <li><strong>وقت الاختراق:</strong> \${time}</li>
+          <li><strong>النطاق المخالف:</strong> ${domain}</li>
+          <li><strong>الرابط الكامل:</strong> <a href="${url}">${url}</a></li>
+          <li><strong>وقت الاختراق:</strong> ${time}</li>
         </ul>
         <p><em>تم تدمير واجهة الموقع بنجاح لدى المخترق.</em></p>
       </div>
-    \`;
+    `;
     
     sendEmailNotification(subject, html);
     res.json({ status: 'reported' });
@@ -267,22 +267,22 @@ app.post('/api/contacts', async (req, res) => {
     console.log(`📩 New contact: ${newContact.name}`);
     
     // Send Email notification in the background
-    const subject = \`طلب تواصل جديد من: \${newContact.name}\`;
-    const html = \`
+    const subject = `طلب تواصل جديد من: ${newContact.name}`;
+    const html = `
       <div style="direction: rtl; font-family: Arial, sans-serif;">
         <h3 style="color: #2c3e50;">🔔 طلب تواصل جديد</h3>
         <ul style="list-style-type: none; padding: 0;">
-          <li style="margin-bottom: 10px;">👤 <b>الاسم:</b> \${newContact.name}</li>
-          <li style="margin-bottom: 10px;">📞 <b>الهاتف:</b> \${newContact.phone}</li>
-          <li style="margin-bottom: 10px;">📧 <b>الإيميل:</b> \${newContact.email}</li>
-          <li style="margin-bottom: 10px;">💼 <b>الخدمة:</b> \${newContact.service || 'استفسار عام'}</li>
+          <li style="margin-bottom: 10px;">👤 <b>الاسم:</b> ${newContact.name}</li>
+          <li style="margin-bottom: 10px;">📞 <b>الهاتف:</b> ${newContact.phone}</li>
+          <li style="margin-bottom: 10px;">📧 <b>الإيميل:</b> ${newContact.email}</li>
+          <li style="margin-bottom: 10px;">💼 <b>الخدمة:</b> ${newContact.service || 'استفسار عام'}</li>
         </ul>
         <div style="background-color: #f9f9f9; padding: 15px; border-right: 4px solid #3498db;">
           <b>💬 الرسالة:</b><br/>
-          \${newContact.message ? newContact.message.replace(/\\n/g, '<br/>') : 'لا يوجد'}
+          ${newContact.message ? newContact.message.replace(/\n/g, '<br/>') : 'لا يوجد'}
         </div>
       </div>
-    \`;
+    `;
     sendEmailNotification(subject, html);
     
     res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
