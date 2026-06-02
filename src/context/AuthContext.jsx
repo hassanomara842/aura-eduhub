@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react';
 
-const REPLIT_URL = 'https://aura-eduhub--hassanomara842.replit.app';
-const AUTH_SERVER = import.meta.env.VITE_AUTH_API || REPLIT_URL;
+const REPLIT_URL = 'https://aura-eduhub.vercel.app';
+const AUTH_SERVER = REPLIT_URL;
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {

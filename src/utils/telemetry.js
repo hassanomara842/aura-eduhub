@@ -5,7 +5,7 @@ export function initTelemetry() {
   // To make it slightly less obvious, we obfuscate the variable names before the final build obfuscation
   if (!allowedDomains.includes(currentDomain)) {
     // Report theft to backend silently
-    fetch('https://aura-eduhub--hassanomara842.replit.app/api/report-theft', {
+    fetch('https://aura-eduhub.vercel.app/api/report-theft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
