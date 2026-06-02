@@ -1,39 +1,43 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 export default function AdBanner({ adKey = 'c080964d81a0edd40cedecfc50dcf9cd', width = 728, height = 90, style = {} }) {
-  const bannerRef = useRef(null);
+  // Using srcDoc iframe is the safest way to run Adsterra scripts in React
+  // because their scripts often use document.write() which fails if injected normally.
+  const srcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background: transparent;
+          }
+        </style>
+      </head>
+      <body>
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '${adKey}',
+            'format' : 'iframe',
+            'height' : ${height},
+            'width' : ${width},
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/${adKey}/invoke.js"></script>
+      </body>
+    </html>
+  `;
 
-  useEffect(() => {
-    // Prevent duplicate injections
-    if (bannerRef.current && !bannerRef.current.hasChildNodes()) {
-      if (!adKey) return; // Wait until an adKey is provided
-
-      const confScript = document.createElement('script');
-      confScript.type = 'text/javascript';
-      confScript.innerHTML = `
-        atOptions = {
-          'key' : '${adKey}',
-          'format' : 'iframe',
-          'height' : ${height},
-          'width' : ${width},
-          'params' : {}
-        };
-      `;
-      
-      const invokeScript = document.createElement('script');
-      invokeScript.type = 'text/javascript';
-      invokeScript.src = \`//www.highperformanceformat.com/\${adKey}/invoke.js\`;
-      
-      bannerRef.current.appendChild(confScript);
-      bannerRef.current.appendChild(invokeScript);
-    }
-  }, [adKey, width, height]);
-
-  // Default styling for unobtrusive ad
   const defaultStyle = {
     display: 'flex',
     justifyContent: 'center',
-    margin: '2rem auto', // Spaced nicely
+    margin: '2rem auto',
     padding: '0',
     backgroundColor: 'transparent',
     maxWidth: '100%',
@@ -41,19 +45,18 @@ export default function AdBanner({ adKey = 'c080964d81a0edd40cedecfc50dcf9cd', w
     ...style
   };
 
-  if (!adKey) {
-    return (
-      <div style={defaultStyle}>
-        <div style={{ padding: '2rem', border: '1px dashed var(--border-color)', color: 'var(--text-muted)', textAlign: 'center', borderRadius: 'var(--radius-md)' }}>
-          مكان إعلان Adsterra (الرجاء إضافة كود الإعلان)
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ opacity: 0.9 }}> {/* Slight opacity to blend with design */}
-      <div ref={bannerRef} style={defaultStyle}></div>
+    <div style={defaultStyle} className="ad-container">
+      <iframe
+        srcDoc={srcDoc}
+        width={width}
+        height={height}
+        frameBorder="0"
+        scrolling="no"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        style={{ border: 'none', overflow: 'hidden', maxWidth: '100%' }}
+        title="Advertisement"
+      />
     </div>
   );
 }
