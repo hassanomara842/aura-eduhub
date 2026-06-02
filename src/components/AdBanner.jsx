@@ -67,7 +67,7 @@ export default function AdBanner({ adKey = 'c080964d81a0edd40cedecfc50dcf9cd', w
 
   return (
     <div style={defaultStyle} className="ad-container">
-      <div style={{ transform: \`scale(\${scale})\`, transformOrigin: 'top center', width: \`\${width}px\`, height: \`\${height}px\` }}>
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center', width: `${width}px`, height: `${height}px` }}>
         <iframe
           srcDoc={srcDoc}
           width={width}
