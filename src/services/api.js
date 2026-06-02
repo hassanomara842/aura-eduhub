@@ -1,4 +1,4 @@
-const REPLIT_URL = 'https://aura-eduhub--hassanomara842.replit.app';
+const REPLIT_URL = 'https://aura-eduhub.vercel.app';
 
 // ── Scholarships ──────────────────
 const API_URL = import.meta.env.VITE_SCHOLARSHIPS_API || `${REPLIT_URL}/scholarships`;
