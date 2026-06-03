@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { getScholarships, createScholarship, updateScholarship, deleteScholarship } from '../services/api';
 
 const ScholarshipContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useScholarships = () => useContext(ScholarshipContext);
 
 export const ScholarshipProvider = ({ children }) => {
@@ -23,6 +24,7 @@ export const ScholarshipProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchScholarships();
   }, []);
 

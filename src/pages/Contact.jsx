@@ -22,6 +22,7 @@ export default function Contact() {
     const subjectParam = params.get('subject');
     
     if (serviceParam) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(prev => ({ ...prev, service: serviceParam }));
     } else if (subjectParam) {
       setFormData(prev => ({ ...prev, message: subjectParam + '\n\n' }));

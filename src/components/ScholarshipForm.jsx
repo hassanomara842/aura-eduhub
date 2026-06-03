@@ -24,6 +24,7 @@ export default function ScholarshipForm({ scholarshipId, onClose, onSuccess, onE
   useEffect(() => {
     if (scholarshipId) {
       const existing = scholarships.find(s => s.id === scholarshipId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (existing) setFormData(existing);
     }
   }, [scholarshipId, scholarships]);

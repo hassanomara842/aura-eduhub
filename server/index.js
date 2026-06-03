@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
@@ -99,6 +100,7 @@ async function migrateDataIfNeeded() {
       if (oldDB.contacts && oldDB.contacts.length > 0) {
         // Add timestamp if missing and remove string id for mongo
         const contactsToMigrate = oldDB.contacts.map(c => {
+           // eslint-disable-next-line no-unused-vars
            const { id, ...rest } = c;
            return rest;
         });
@@ -108,8 +110,8 @@ async function migrateDataIfNeeded() {
 
       console.log('🎉 Migration completed successfully!');
     }
-  } catch (error) {
-    console.error('❌ Migration error:', error);
+  } catch (err) {
+    console.error('❌ Migration error:', err);
   }
 }
 
@@ -143,7 +145,7 @@ app.post('/api/login', async (req, res) => {
     const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '8h' });
     console.log(`✅ Login: ${admin.username} (${admin.role})`);
     res.json({ token, username: admin.username, role: admin.role });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -169,7 +171,7 @@ app.put('/api/admin/credentials', verifyToken, async (req, res) => {
 
     console.log(`🔒 Credentials updated for: ${newUsername}`);
     res.json({ success: true, message: 'تم تحديث البيانات بنجاح' });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -181,7 +183,7 @@ app.get('/api/contacts', verifyToken, async (req, res) => {
     const contacts = await Contact.find().sort({ createdAt: -1 });
     // Map _id to id for frontend compatibility
     res.json(contacts.map(c => ({ ...c.toObject(), id: c._id.toString() })));
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -286,7 +288,7 @@ app.post('/api/contacts', async (req, res) => {
     sendEmailNotification(subject, html);
     
     res.status(201).json({ ...newContact.toObject(), id: newContact._id.toString() });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -296,7 +298,7 @@ app.delete('/api/contacts/:id', verifyToken, async (req, res) => {
     await Contact.findByIdAndDelete(req.params.id);
     console.log(`🗑️  Deleted contact: ${req.params.id}`);
     res.json({ success: true });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -307,7 +309,7 @@ app.get('/scholarships', async (req, res) => {
   try {
     const scholarships = await Scholarship.find().sort({ createdAt: -1 });
     res.json(scholarships.map(s => ({ ...s.toObject(), id: s.id })));
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -317,7 +319,7 @@ app.get('/scholarships/:id', async (req, res) => {
     const scholarship = await Scholarship.findOne({ id: req.params.id });
     if (!scholarship) return res.status(404).json({ error: 'Not found' });
     res.json(scholarship);
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -327,9 +329,9 @@ app.post('/scholarships', verifyToken, async (req, res) => {
     const newScholarship = new Scholarship({ ...req.body, id: Date.now().toString() });
     await newScholarship.save();
     res.status(201).json(newScholarship);
-  } catch (error) {
-    console.error('❌ POST /scholarships error:', error.message);
-    res.status(500).json({ error: 'Server error', details: error.message });
+  } catch (err) {
+    console.error('❌ POST /scholarships error:', err.message);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -342,7 +344,7 @@ app.put('/scholarships/:id', verifyToken, async (req, res) => {
     );
     if (!scholarship) return res.status(404).json({ error: 'Not found' });
     res.json(scholarship);
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -351,7 +353,7 @@ app.delete('/scholarships/:id', verifyToken, async (req, res) => {
   try {
     await Scholarship.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

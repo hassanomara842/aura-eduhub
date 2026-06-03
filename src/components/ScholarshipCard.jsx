@@ -1,18 +1,18 @@
 import { MapPin, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function ScholarshipCard({ id, title, country, coverage, deadline, image }) {
-  const CardWrapper = ({ children }) =>
-    id ? (
-      <Link to={`/scholarships/${id}`} style={{ textDecoration: 'none', display: 'block' }}>
-        {children}
-      </Link>
-    ) : (
-      <div>{children}</div>
-    );
+const CardWrapper = ({ id, children }) =>
+  id ? (
+    <Link to={`/scholarships/${id}`} style={{ textDecoration: 'none', display: 'block' }}>
+      {children}
+    </Link>
+  ) : (
+    <div>{children}</div>
+  );
 
+export default function ScholarshipCard({ id, title, country, coverage, deadline, image }) {
   return (
-    <CardWrapper>
+    <CardWrapper id={id}>
       <div style={{
         backgroundColor: 'var(--surface)',
         borderRadius: 'var(--radius-lg)',

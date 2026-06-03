@@ -98,6 +98,7 @@ export default function AdminDashboard() {
     };
 
     // Initial fetch always (to get badge count)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setContactsLoading(true);
     fetchContacts().finally(() => setContactsLoading(false));
 

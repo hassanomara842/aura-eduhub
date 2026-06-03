@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function AdBanner({ adKey = 'c080964d81a0edd40cedecfc50dcf9cd', width = 728, height = 90, style = {} }) {
   const [scale, setScale] = useState(1);
