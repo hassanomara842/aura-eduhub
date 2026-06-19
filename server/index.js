@@ -364,7 +364,7 @@ app.delete('/scholarships/:id', verifyToken, async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (_, res) => res.json({ status: 'ok', dbState: mongoose.connection.readyState, hasMongoUri: !!process.env.MONGO_URI, error: global.dbError }));
+app.get('/api/health', (_, res) => res.json({ status: 'ok', dbState: mongoose.connection.readyState, uriStart: process.env.MONGO_URI ? process.env.MONGO_URI.substring(0, 30) : null, error: global.dbError }));
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
