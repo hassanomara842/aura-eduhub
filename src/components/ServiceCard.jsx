@@ -1,7 +1,7 @@
 import { CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function ServiceCard({ title, description, price, features, isPopular }) {
+export default function ServiceCard({ title, description, features, isPopular }) {
   return (
     <div style={{
       backgroundColor: 'var(--surface)',
@@ -43,10 +43,7 @@ export default function ServiceCard({ title, description, price, features, isPop
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h3 style={{ fontSize: '1.5rem', color: 'var(--primary-dark)', marginBottom: '0.5rem' }}>{title}</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', minHeight: '40px' }}>{description}</p>
-        <div style={{ marginTop: '1.5rem' }}>
-          <span style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-main)' }}>{price}</span>
-          {price !== 'مخصص' && <span style={{ color: 'var(--text-muted)' }}> / خدمة</span>}
-        </div>
+
       </div>
       
       <ul style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
