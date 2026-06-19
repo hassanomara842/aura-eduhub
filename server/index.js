@@ -104,6 +104,18 @@ async function connectDB() {
 // Connect immediately but also allow route handlers to await it if needed
 connectDB().catch(console.error);
 
+// ── Database Connection Middleware for Vercel ─────────────────
+// Ensures the DB is connected before handling any request
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Middleware DB Connection Error:', err.message);
+    res.status(500).json({ error: 'Database connection failed', details: err.message });
+  }
+});
+
 
 // ── Migration Logic ───────────────────────────────────────────
 async function migrateDataIfNeeded() {
