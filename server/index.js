@@ -395,7 +395,7 @@ app.get('/api/health', (_, res) => {
     if (process.env.MONGO_URI) {
       hostname = new URL(process.env.MONGO_URI).hostname;
     }
-  } catch (e) { hostname = 'invalid-url'; }
+  } catch { hostname = 'invalid-url'; }
   res.json({ status: 'ok', dbState: mongoose.connection.readyState, hostname, error: global.dbError });
 });
 
