@@ -66,16 +66,34 @@ app.use(strictCors);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-global.dbError = null;
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB Atlas');
-    migrateDataIfNeeded();
-  })
-  .catch(err => {
-    console.error('❌ MongoDB Connection Error:', err);
-    global.dbError = err.message;
-  });
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    const opts = {
+      serverSelectionTimeoutMS: 5000,
+      family: 4 // Force IPv4, crucial for Vercel + MongoDB Free Tier
+    };
+    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
+      console.log('✅ Connected to MongoDB Atlas (Vercel Mode)');
+      migrateDataIfNeeded();
+      return mongoose;
+    }).catch(err => {
+      console.error('❌ MongoDB Connection Error:', err);
+      global.dbError = err.message;
+      throw err;
+    });
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// Connect immediately but also allow route handlers to await it if needed
+connectDB().catch(console.error);
 
 
 // ── Migration Logic ───────────────────────────────────────────
