@@ -390,6 +390,78 @@ app.delete('/scholarships/:id', verifyToken, async (req, res) => {
   }
 });
 
+// ── Dynamic Sitemap (auto-includes all scholarships) ─────────
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const scholarships = await Scholarship.find({}, 'id title createdAt').sort({ createdAt: -1 });
+    const siteUrl = 'https://aura-eduhub.me';
+    const today = new Date().toISOString().split('T')[0];
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- الصفحات الثابتة -->
+  <url>
+    <loc>${siteUrl}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/scholarships</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/services</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${siteUrl}/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+`;
+
+    // إضافة كل المنح ديناميكياً
+    for (const s of scholarships) {
+      const lastmod = s.createdAt ? new Date(s.createdAt).toISOString().split('T')[0] : today;
+      xml += `  <url>
+    <loc>${siteUrl}/scholarships/${s.id}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+`;
+    }
+
+    xml += `</urlset>`;
+    res.set('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    console.error('Sitemap error:', err.message);
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
+// ── Robots.txt ────────────────────────────────────────────────
+app.get('/robots.txt', (_, res) => {
+  res.set('Content-Type', 'text/plain');
+  res.send(`User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://aura-eduhub.me/sitemap.xml
+`);
+});
+
 // Health check
 app.get('/api/health', (_, res) => {
   let hostname = 'unknown';

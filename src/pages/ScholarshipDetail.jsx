@@ -76,10 +76,42 @@ export default function ScholarshipDetail() {
 
   return (
     <div className="animate-fade-in" style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
+      {/* JSON-LD Structured Data for rich Google results */}
       <SEO 
         title={scholarship.title} 
         description={`تفاصيل ${scholarship.title} في ${scholarship.country}. التمويل: ${scholarship.coverage}. التقديم الآن عبر منصة Aura EduHub.`}
         image={scholarship.image}
+        url={`/scholarships/${scholarship.id}`}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "EducationEvent",
+          "name": scholarship.title,
+          "description": `منحة دراسية في ${scholarship.country} - ${scholarship.coverage}`,
+          "url": `https://aura-eduhub.me/scholarships/${scholarship.id}`,
+          "location": {
+            "@type": "Place",
+            "name": scholarship.country
+          },
+          "organizer": {
+            "@type": "Organization",
+            "name": "Aura EduHub",
+            "url": "https://aura-eduhub.me"
+          },
+          "eventStatus": "https://schema.org/EventScheduled",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": scholarship.officialLink
+          },
+          ...(scholarship.deadline && {
+            "endDate": scholarship.deadline
+          }),
+          ...(scholarship.image && {
+            "image": scholarship.image
+          })
+        }}
       />
 
       {/* Hero Banner */}

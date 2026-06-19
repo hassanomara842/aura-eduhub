@@ -23,7 +23,11 @@ export default function Scholarships() {
 
   return (
     <div className="container py-16 animate-fade-in">
-      <SEO title="تصفح جميع المنح" />
+      <SEO 
+        title="تصفح جميع المنح الدراسية" 
+        description="استكشف أحدث المنح الدراسية حول العالم. منح ممولة بالكامل وجزئياً في أوروبا وأمريكا وآسيا. ابدأ رحلتك الأكاديمية مع Aura EduHub."
+        url="/scholarships"
+      />
       <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <h1 style={{ fontSize: '3rem', color: 'var(--primary-dark)', marginBottom: '1rem' }}>المنح الدراسية المتاحة</h1>
         <p style={{ maxWidth: '700px', margin: '0 auto', fontSize: '1.125rem' }}>

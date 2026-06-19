@@ -1,7 +1,7 @@
 
 import { Helmet } from 'react-helmet-async';
 
-export default function SEO({ title, description, image, url }) {
+export default function SEO({ title, description, image, url, jsonLd }) {
   const siteTitle = 'Aura EduHub - دليلك للمنح الدراسية';
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   
@@ -19,6 +19,9 @@ export default function SEO({ title, description, image, url }) {
       <title>{fullTitle}</title>
       <meta name="description" content={metaDesc} />
       
+      {/* Canonical URL */}
+      <link rel="canonical" href={metaUrl} />
+
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={metaUrl} />
@@ -32,6 +35,13 @@ export default function SEO({ title, description, image, url }) {
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={metaDesc} />
       {image && <meta name="twitter:image" content={metaImage} />}
+
+      {/* JSON-LD Structured Data */}
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
     </Helmet>
   );
 }
