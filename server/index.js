@@ -66,13 +66,16 @@ app.use(strictCors);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ── MongoDB Connection ─────────────────────────────────────────
+global.dbError = null;
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas');
     migrateDataIfNeeded();
   })
-  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+  .catch(err => {
+    console.error('❌ MongoDB Connection Error:', err);
+    global.dbError = err.message;
+  });
 
 
 // ── Migration Logic ───────────────────────────────────────────
@@ -361,7 +364,7 @@ app.delete('/scholarships/:id', verifyToken, async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (_, res) => res.json({ status: 'ok', dbState: mongoose.connection.readyState, hasMongoUri: !!process.env.MONGO_URI }));
+app.get('/api/health', (_, res) => res.json({ status: 'ok', dbState: mongoose.connection.readyState, hasMongoUri: !!process.env.MONGO_URI, error: global.dbError }));
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
