@@ -11,7 +11,7 @@ export default function Home() {
   const { scholarships, loading } = useScholarships();
   const featuredScholarships = scholarships.slice(0, 3);
 
-  if (loading) return <LoadingSpinner />;
+
 
   return (
     <div>
@@ -72,11 +72,15 @@ export default function Home() {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredScholarships.map((s, idx) => (
-              <ScholarshipCard key={idx} {...s} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="py-8"><LoadingSpinner /></div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredScholarships.map((s, idx) => (
+                <ScholarshipCard key={idx} {...s} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

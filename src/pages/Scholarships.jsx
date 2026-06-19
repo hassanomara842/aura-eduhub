@@ -11,7 +11,7 @@ export default function Scholarships() {
   const [query, setQuery] = useState('');
   const [country, setCountry] = useState('');
 
-  if (loading) return <LoadingSpinner />;
+
 
   const filtered = scholarships.filter((s) => {
     const matchQuery = !query || s.title.includes(query) || s.country.includes(query);
@@ -57,15 +57,19 @@ export default function Scholarships() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filtered.length > 0 ? filtered.map((s, idx) => (
-          <ScholarshipCard key={s.id || idx} {...s} />
-        )) : (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-            <p style={{ fontSize: '1.25rem' }}>لا توجد منح تطابق بحثك. حاول كلمة مختلفة.</p>
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <div className="py-16"><LoadingSpinner /></div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filtered.length > 0 ? filtered.map((s, idx) => (
+            <ScholarshipCard key={s.id || idx} {...s} />
+          )) : (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: '1.25rem' }}>لا توجد منح تطابق بحثك. حاول كلمة مختلفة.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Adsterra Banner */}
       <div style={{ marginTop: '3rem' }}>
