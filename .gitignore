@@ -26,3 +26,6 @@ dist-ssr
 # بيانات سرية — لا تُرفع على GitHub أبداً
 server/.env
 .env
+test-old-db.js
+test-*.js
+test_*.js
