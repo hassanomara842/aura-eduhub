@@ -85,10 +85,17 @@ async function connectDB() {
     }).catch(err => {
       console.error('❌ MongoDB Connection Error:', err);
       global.dbError = err.message;
+      cached.promise = null; // RESET SO IT CAN RETRY!
       throw err;
     });
   }
-  cached.conn = await cached.promise;
+  
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null;
+    throw err;
+  }
   return cached.conn;
 }
 
