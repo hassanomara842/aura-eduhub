@@ -8,7 +8,7 @@ export default function SEO({ title, description, image, url }) {
   const defaultDesc = 'Aura EduHub هو دليلك الشامل للبحث عن المنح الدراسية والفرص التعليمية في جميع أنحاء العالم.';
   const metaDesc = description || defaultDesc;
   
-  const siteUrl = 'https://aura-eduhub.netlify.app';
+  const siteUrl = 'https://aura-eduhub.me';
   const metaUrl = url ? `${siteUrl}${url}` : siteUrl;
   
   const metaImage = image || `${siteUrl}/assets/logo-CiDzFQIp.png`; // Default logo

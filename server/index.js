@@ -42,6 +42,8 @@ const MONGO_URI = process.env.MONGO_URI;
 const DB_PATH = path.join(__dirname, '..', 'db.json');
 
 const allowedOrigins = [
+  'https://aura-eduhub.me',
+  'https://www.aura-eduhub.me',
   'https://aura-eduhub.netlify.app', 
   'http://localhost:5000', 
   'http://127.0.0.1:5000',
